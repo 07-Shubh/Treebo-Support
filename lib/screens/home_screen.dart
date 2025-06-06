@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:treebo_self_checkin/screens/checkout_screen.dart';
 import 'package:treebo_self_checkin/screens/add_ons_screen.dart';
 import 'package:treebo_self_checkin/screens/auth_screen.dart';
+import 'package:treebo_self_checkin/widgets/chat_bot.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -95,6 +96,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         _animationController.reverse();
       }
     });
+  }
+
+  void _showChatBot() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ChatBot(),
+    );
   }
 
   @override
@@ -520,96 +530,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _toggleChatBot,
+        onPressed: _showChatBot,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: Icon(_isChatBotVisible ? Icons.close : Icons.chat, color: Colors.white),
+        child: const Icon(Icons.chat, color: Colors.white),
       ),
-      bottomNavigationBar: _isChatBotVisible
-          ? Container(
-              height: 300,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Treebo Assistant',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, size: 20),
-                        onPressed: _toggleChatBot,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.chat_bubble_outline,
-                            size: 48,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'How can I help you today?',
-                            style: GoogleFonts.poppins(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Type your message...',
-                      hintStyle: GoogleFonts.poppins(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.send, color: Colors.blue),
-                        onPressed: () {
-                          // Handle send message
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : null,
     );
   }
   
