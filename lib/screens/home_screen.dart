@@ -5,6 +5,7 @@ import 'package:treebo_self_checkin/screens/checkout_screen.dart';
 import 'package:treebo_self_checkin/screens/add_ons_screen.dart';
 import 'package:treebo_self_checkin/screens/auth_screen.dart';
 import 'package:treebo_self_checkin/widgets/chat_bot.dart';
+import 'package:treebo_self_checkin/models/notification_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -107,6 +108,113 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
+  void _showNotifications() {
+    final notifications = NotificationManager.getNotifications();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Notifications',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                NotificationManager.markAllAsRead();
+                Navigator.pop(context);
+                setState(() {}); // Refresh the notification count
+              },
+              child: const Text('Mark all as read'),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: notifications.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.notifications_none_rounded,
+                        size: 48,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No notifications',
+                        style: GoogleFonts.poppins(
+                          color: Colors.grey[600],
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: notifications.length,
+                  itemBuilder: (context, index) {
+                    final notification = notifications[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: notification.isRead
+                            ? Colors.grey[200]
+                            : Theme.of(context).colorScheme.primary,
+                        child: Icon(
+                          Icons.notifications_rounded,
+                          color: notification.isRead
+                              ? Colors.grey[600]
+                              : Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        notification.title,
+                        style: GoogleFonts.poppins(
+                          fontWeight: notification.isRead
+                              ? FontWeight.normal
+                              : FontWeight.w600,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(notification.message),
+                          const SizedBox(height: 4),
+                          Text(
+                            DateFormat('MMM d, h:mm a').format(notification.timestamp),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        NotificationManager.markAsRead(notification.id);
+                        Navigator.pop(context);
+                        setState(() {}); // Refresh the notification count
+                      },
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _messageController.dispose();
@@ -125,38 +233,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             icon: Stack(
               children: [
                 const Icon(Icons.notifications_outlined),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: const Text(
-                      '3',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
+                if (NotificationManager.getUnreadCount() > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
                       ),
-                      textAlign: TextAlign.center,
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '${NotificationManager.getUnreadCount()}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No new notifications'),
-                ),
-              );
-            },
+            onPressed: _showNotifications,
           ),
         ],
       ),
@@ -295,200 +398,190 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
             const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.2,
-              children: [
-                _buildServiceCard(
-                  icon: Icons.restaurant_rounded,
-                  label: 'Dining',
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Dining Options'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              leading: const Icon(Icons.room_service_rounded),
-                              title: const Text('Room Service'),
-                              subtitle: const Text('24/7 in-room dining'),
-                              onTap: () {
+            SizedBox(
+              height: 120, // Fixed height for the row
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _buildServiceCard(
+                    icon: Icons.restaurant_rounded,
+                    label: 'Dining',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Dining Options'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.room_service_rounded),
+                                title: const Text('Room Service'),
+                                subtitle: const Text('24/7 in-room dining'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Room service menu will be brought to your room shortly')),
+                                  );
+                                },
+                              ),
+                              const Divider(),
+                              ListTile(
+                                leading: const Icon(Icons.restaurant_rounded),
+                                title: const Text('Restaurant'),
+                                subtitle: const Text('Open 7:00 AM - 11:00 PM'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  // Navigate to restaurant menu
+                                },
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _buildServiceCard(
+                    icon: Icons.local_taxi_rounded,
+                    label: 'Taxi',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Book a Taxi'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                decoration: InputDecoration(
+                                  labelText: 'Pickup Location',
+                                  hintText: 'Hotel Lobby',
+                                  border: const OutlineInputBorder(),
+                                  prefixIcon: const Icon(Icons.location_on_rounded),
+                                  filled: true,
+                                  fillColor: Colors.grey[100],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextField(
+                                decoration: InputDecoration(
+                                  labelText: 'Destination',
+                                  hintText: 'Enter destination',
+                                  border: const OutlineInputBorder(),
+                                  prefixIcon: const Icon(Icons.flag_rounded),
+                                  filled: true,
+                                  fillColor: Colors.grey[100],
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Room service menu will be brought to your room shortly')),
+                                  const SnackBar(content: Text('Taxi has been booked. Please wait at the lobby.')),
                                 );
                               },
+                              child: const Text('Book Taxi'),
                             ),
-                            const Divider(),
-                            ListTile(
-                              leading: const Icon(Icons.restaurant_rounded),
-                              title: const Text('Restaurant'),
-                              subtitle: const Text('Open 7:00 AM - 11:00 PM'),
-                              onTap: () {
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _buildServiceCard(
+                    icon: Icons.local_laundry_service_rounded,
+                    label: 'Laundry',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Laundry Service'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('Same-day laundry service available. Please place your laundry in the provided bag.'),
+                              const SizedBox(height: 16),
+                              TextField(
+                                decoration: InputDecoration(
+                                  labelText: 'Special Instructions',
+                                  hintText: 'Any special requests?',
+                                  border: const OutlineInputBorder(),
+                                  filled: true,
+                                  fillColor: Colors.grey[100],
+                                ),
+                                maxLines: 3,
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
                                 Navigator.pop(context);
-                                // Navigate to restaurant menu
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Laundry service has been requested. Someone will collect your laundry shortly.')),
+                                );
                               },
+                              child: const Text('Request Pickup'),
                             ),
                           ],
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                _buildServiceCard(
-                  icon: Icons.local_taxi_rounded,
-                  label: 'Taxi',
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Book a Taxi'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextField(
-                              decoration: InputDecoration(
-                                labelText: 'Pickup Location',
-                                hintText: 'Hotel Lobby',
-                                border: const OutlineInputBorder(),
-                                prefixIcon: const Icon(Icons.location_on_rounded),
-                                filled: true,
-                                fillColor: Colors.grey[100],
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _buildServiceCard(
+                    icon: Icons.wifi_rounded,
+                    label: 'Wi-Fi',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Wi-Fi Information'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Connect to our complimentary Wi-Fi:'),
+                              const SizedBox(height: 16),
+                              _buildWifiInfoRow('Network Name:', 'Treebo_Guest'),
+                              _buildWifiInfoRow('Password:', 'welcome123'),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Please note: Speed may vary based on your location and number of connected devices.',
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              decoration: InputDecoration(
-                                labelText: 'Destination',
-                                hintText: 'Enter destination',
-                                border: const OutlineInputBorder(),
-                                prefixIcon: const Icon(Icons.flag_rounded),
-                                filled: true,
-                                fillColor: Colors.grey[100],
-                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
                             ),
                           ],
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Taxi has been booked. Please wait at the lobby.')),
-                              );
-                            },
-                            child: const Text('Book Taxi'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                _buildServiceCard(
-                  icon: Icons.local_laundry_service_rounded,
-                  label: 'Laundry',
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Laundry Service'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('Same-day laundry service available. Please place your laundry in the provided bag.'),
-                            const SizedBox(height: 16),
-                            TextField(
-                              decoration: InputDecoration(
-                                labelText: 'Special Instructions',
-                                hintText: 'Any special requests?',
-                                border: const OutlineInputBorder(),
-                                filled: true,
-                                fillColor: Colors.grey[100],
-                              ),
-                              maxLines: 3,
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Laundry service has been requested. Someone will collect your laundry shortly.')),
-                              );
-                            },
-                            child: const Text('Request Pickup'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                _buildServiceCard(
-                  icon: Icons.wifi_rounded,
-                  label: 'Wi-Fi',
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Wi-Fi Information'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Connect to our complimentary Wi-Fi:'),
-                            const SizedBox(height: 16),
-                            _buildWifiInfoRow('Network Name:', 'Treebo_Guest'),
-                            _buildWifiInfoRow('Password:', 'welcome123'),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Please note: Speed may vary based on your location and number of connected devices.',
-                              style: TextStyle(fontSize: 12, color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Close'),
-                          ),
-                          TextButton.icon(
-                            onPressed: () {
-                              // In a real app, this would connect to WiFi
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Wi-Fi connection request sent')),
-                              );
-                            },
-                            icon: const Icon(Icons.wifi, size: 20),
-                            label: const Text('Connect'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
             
             const SizedBox(height: 24),
@@ -704,42 +797,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     required VoidCallback onTap,
   }) {
     return Container(
-      height: 120,
+      width: 100, // Fixed width for each card
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   icon,
-                  size: 28,
+                  size: 32,
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   label,
-                  textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black87,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
