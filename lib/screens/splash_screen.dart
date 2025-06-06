@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:treebo_self_checkin/screens/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,10 +18,7 @@ class _SplashScreenState extends State<SplashScreen> {
   _navigateToHome() async {
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+    Navigator.pushReplacementNamed(context, '/bookings');
   }
 
   @override
@@ -33,13 +29,20 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Replace with actual Treebo logo
+            // Treebo logo
             Container(
-              width: 150,
-              height: 150,
-              decoration: const BoxDecoration(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: const Center(
                 child: Text(
@@ -48,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             Text(
               'Treebo',
               style: GoogleFonts.poppins(
@@ -62,8 +65,9 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'Self Check-in',
               style: GoogleFonts.poppins(
-                fontSize: 18,
-                color: Colors.white70,
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
                 letterSpacing: 0.5,
               ),
             ),
