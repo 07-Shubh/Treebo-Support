@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:treebo_self_checkin/screens/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -33,7 +34,6 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Replace with actual Treebo logo
             Container(
               width: 150,
               height: 150,
@@ -41,16 +41,18 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Center(
-                child: Text(
-                  '🌳',
-                  style: TextStyle(fontSize: 60),
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/treebo-club-logo-black.svg',
+                  width: 100,
+                  height: 100,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
             const SizedBox(height: 24),
             Text(
-              'Treebo',
+              'Treebo Club',
               style: GoogleFonts.poppins(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
