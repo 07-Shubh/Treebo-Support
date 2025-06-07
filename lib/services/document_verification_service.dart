@@ -31,7 +31,7 @@ class DocumentVerificationService {
           'isValid': true,
           'confidence': 0.95,
           'extractedData': {
-            'name': 'Venkata',
+            'name': 'John Doe',
             'documentNumber': 'XXXX XXXX XXXX',
             'dateOfBirth': '01/01/1990',
           },

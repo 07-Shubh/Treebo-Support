@@ -32,28 +32,6 @@ class _DocumentVerificationScreenState extends State<DocumentVerificationScreen>
     'Passport',
   ];
   
-  final TextEditingController _bookingIdController = TextEditingController();
-  String? _bookingIdError;
-
-  @override
-  void dispose() {
-    _bookingIdController.dispose();
-    super.dispose();
-  }
-
-  bool _validateBookingId() {
-    if (_bookingIdController.text.isEmpty) {
-      setState(() {
-        _bookingIdError = 'Please enter your booking ID';
-      });
-      return false;
-    }
-    setState(() {
-      _bookingIdError = null;
-    });
-    return true;
-  }
-
   Future<void> _pickImage(bool isFront) async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -167,10 +145,6 @@ class _DocumentVerificationScreenState extends State<DocumentVerificationScreen>
   }
   
   void _proceedToSignature() {
-    if (!_validateBookingId()) {
-      return;
-    }
-
     if (!_isFrontVerified) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -194,10 +168,7 @@ class _DocumentVerificationScreenState extends State<DocumentVerificationScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SignatureScreen(
-          extractedData: _extractedData,
-          bookingId: _bookingIdController.text,
-        ),
+        builder: (context) => SignatureScreen(extractedData: _extractedData),
       ),
     );
   }
@@ -228,35 +199,6 @@ class _DocumentVerificationScreenState extends State<DocumentVerificationScreen>
                 fontSize: 14,
                 color: Colors.grey[600],
               ),
-            ),
-            const SizedBox(height: 24),
-            
-            // Booking ID Field
-            Text(
-              'Booking ID',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _bookingIdController,
-              decoration: InputDecoration(
-                hintText: 'Enter your booking ID',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                errorText: _bookingIdError,
-                prefixIcon: const Icon(Icons.confirmation_number),
-              ),
-              onChanged: (value) {
-                if (_bookingIdError != null) {
-                  setState(() {
-                    _bookingIdError = null;
-                  });
-                }
-              },
             ),
             const SizedBox(height: 24),
             
