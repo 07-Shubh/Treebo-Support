@@ -5,10 +5,12 @@ import 'checkin_confirmation_screen.dart';
 
 class SignatureScreen extends StatefulWidget {
   final Map<String, dynamic>? extractedData;
+  final String bookingId;
   
   const SignatureScreen({
     super.key,
     this.extractedData,
+    required this.bookingId,
   });
 
   @override
@@ -52,6 +54,24 @@ class _SignatureScreenState extends State<SignatureScreen> {
       ),
       body: Column(
         children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.grey[100],
+            child: Row(
+              children: [
+                const Icon(Icons.confirmation_number, color: Colors.blue),
+                const SizedBox(width: 8),
+                Text(
+                  'Booking ID: ${widget.bookingId}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),

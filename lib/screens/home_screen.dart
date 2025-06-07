@@ -6,6 +6,7 @@ import 'package:treebo_self_checkin/screens/add_ons_screen.dart';
 import 'package:treebo_self_checkin/screens/auth_screen.dart';
 import 'package:treebo_self_checkin/widgets/chat_bot.dart';
 import 'package:treebo_self_checkin/models/notification_model.dart';
+import 'booking_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -215,6 +216,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
+  void _navigateToBookingDetails() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const BookingDetailsScreen(),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _messageController.dispose();
@@ -395,6 +405,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton.icon(
+                onPressed: _navigateToBookingDetails,
+                icon: const Icon(Icons.calendar_today),
+                label: const Text('View My Bookings'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
